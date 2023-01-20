@@ -1,0 +1,9 @@
+---
+
+argocd_action: present
+argocd_version: v0.17.0
+argocd_k8s_namespace: argocd
+argocd_k8s_service_type: LoadBalancer
+argocd_admin_name: admin
+argocd_current_admin_password: ""
+argocd_new_admin_password: demo

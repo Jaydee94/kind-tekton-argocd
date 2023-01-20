@@ -1,0 +1,16 @@
+---
+
+- name: "K3s with argo and tekton"
+  hosts: localhost
+  gather_facts: true
+  connection: local
+  vars:
+    state: "present"
+  tasks:
+    - name: "Install or Destroy kind"
+      ansible.builtin.include_role:
+        name: "kind"
+    - name: "Install argocd"
+      ansible.builtin.include_role:
+        name: "argocd"
+      when: state == "present"
