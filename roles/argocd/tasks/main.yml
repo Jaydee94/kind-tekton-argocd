@@ -50,3 +50,8 @@
 
 - name: Manage admin user
   ansible.builtin.import_tasks: users.yml
+
+- name: Deploy tekton Application
+  kubernetes.core.k8s:
+    src: templates/tekton-operator-app.yml
+    state: present

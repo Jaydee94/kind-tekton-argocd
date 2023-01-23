@@ -1,0 +1,21 @@
+---
+
+- name: "Find arch"
+  ansible.builtin.shell:
+    cmd: "case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac"
+  register: kind_os_arch
+
+- name: "Find os"
+  ansible.builtin.shell:
+    cmd: "uname | awk '{print tolower($0)}'"
+  register: kind_os_name
+
+- name: "Download operatorsdk"
+  get_url:
+    url: https://github.com/operator-framework/operator-sdk/releases/download/v1.26.0/operator-sdk_{{ kind_os_name.stdout }}_{{ kind_os_arch.stdout }}
+    dest: $HOME/.local/bin/operator-sdk
+    mode: 0755
+
+- name: "Install olm"
+  ansible.builtin.shell:
+    cmd: operator-sdk olm install

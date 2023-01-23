@@ -1,6 +1,6 @@
 ---
 
-- name: Download kind binary
+- name: "Download kind binary"
   ansible.builtin.get_url:
     url: https://kind.sigs.k8s.io/dl/{{ kind_version }}/kind-linux-amd64
     dest: ~/.local/bin/kind
@@ -11,12 +11,21 @@
     name: "demo-control-plane"
   register: cluster_check_result
 
-- name: Create kind cluster
-  ansible.builtin.command:
-    cmd: "kind create cluster -n demo"
+- name: "Install kind with olm and tekton"
   when: state == "present" and not cluster_check_result.exists
+  block:
+    - name: "Create kind cluster"
+      ansible.builtin.command:
+        cmd: "kind create cluster -n demo"
 
-- name: Destroy kind cluster
+    - name: "Install OLM into kind cluster"
+      ansible.builtin.import_tasks: olm.yml
+
+    - name: "Install Tekton operator"
+      ansible.builtin.shell:
+        cmd: "kubectl create -f https://operatorhub.io/install/tektoncd-operator.yaml"
+
+- name: "Destroy kind cluster"
   ansible.builtin.command:
     cmd: "kind delete cluster -n demo"
   when: state == "absent"
