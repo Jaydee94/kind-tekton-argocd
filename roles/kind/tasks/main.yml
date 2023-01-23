@@ -18,5 +18,5 @@
 
 - name: Destroy kind cluster
   ansible.builtin.command:
-    cmd: "kind create cluster -n demo"
-  when: state == "absent" and cluster_check_result.exists
+    cmd: "kind delete cluster -n demo"
+  when: state == "absent"
