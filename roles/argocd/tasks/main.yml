@@ -1,5 +1,5 @@
+# code: language=ansible
 ---
-
 - name: Create Argocd Namespace
   kubernetes.core.k8s:
     api_version: v1
