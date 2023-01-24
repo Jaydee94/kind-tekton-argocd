@@ -1,14 +1,15 @@
 # code: language=ansible
 ---
-
-- name: "Argo admin user setup"
-  run_once: true
-  block:
-    - name: "Bcrypt new argocd password"
-      ansible.builtin.shell:
-        cmd: argocd account bcrypt --password "{{ argocd_new_admin_password }}"
-      register: argocd_admin_pw_bcrypted
-
-    - name: "Set new argocd admin password"
-      ansible.builtin.shell:
-        cmd: "kubectl -n argocd patch secret argocd-secret -p '{\"stringData\": {\"admin.password\": \"{{ argocd_admin_pw_bcrypted.stdout }}\", \"admin.passwordMtime\": \"'$(date +%FT%T%Z)'\"}}'"
+- name: "Set new argocd admin password"
+  kubernetes.core.k8s_json_patch:
+    kind: secret
+    name: argocd-secret
+    namespace: "{{ argocd_k8s_namespace }}"
+    version: v1
+    patch:
+      - op: replace
+        path: /data/admin.password
+        value: "{{ argocd_new_admin_password | password_hash('bcrypt') | b64encode }}"
+      - op: replace
+        path: /data/admin.passwordMtime
+        value: "{{ '%FT%T%Z' | strftime() | b64encode }}"
