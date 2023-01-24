@@ -1,16 +1,17 @@
+# code: language=ansible
 ---
 
-- name: "K3s with argo and tekton"
+- name: "Kind-cluster with ArgoCD and Tekton"
   hosts: localhost
   gather_facts: true
   connection: local
   vars:
     state: "present"
   tasks:
-    - name: "Install or Destroy kind"
-      ansible.builtin.include_role:
+    - name: "Install or Destroy Kind"
+      ansible.builtin.import_role:
         name: "kind"
-    - name: "Install argocd"
-      ansible.builtin.include_role:
+    - name: "Install ArgoCD"
+      ansible.builtin.import_role:
         name: "argocd"
       when: state == "present"
