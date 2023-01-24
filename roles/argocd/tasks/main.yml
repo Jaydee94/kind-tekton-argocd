@@ -40,7 +40,7 @@
 
 - name: Port forward argocd service
   ansible.builtin.command: kubectl -n "{{ argocd_k8s_namespace }}" port-forward svc/argocd-server 8443:443
-  async: 30
+  async: 20
   poll: 0
   register: _port_forward
 
@@ -51,7 +51,5 @@
 - name: Manage admin user
   ansible.builtin.import_tasks: users.yml
 
-- name: Deploy tekton Application
-  kubernetes.core.k8s:
-    src: templates/tekton-operator-app.yml
-    state: present
+- name: Install tekton
+  ansible.builtin.import_tasks: tekton.yml

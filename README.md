@@ -1,11 +1,11 @@
 # kind-tekton-argocd
 
-Demo to deploy a local k3s cluster with tekton and argocd
+Demo to deploy a local kind cluster with tekton and argocd
 
 ## Prepare WSL
 
 ```bash
-pip install ansible ansible-lint
+pip install ansible ansible-lint kubernetes
 ```
 
 ## Run Playbook

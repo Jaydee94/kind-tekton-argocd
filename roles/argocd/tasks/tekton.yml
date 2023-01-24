@@ -1,0 +1,28 @@
+---
+
+- name: Deploy tekton Application
+  kubernetes.core.k8s:
+    src: templates/tekton-operator-app.yml
+    state: present
+
+- name: Get ArgoCD token
+  ansible.builtin.uri:
+    url: "https://localhost:8443/api/v1/session"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+    body: '{"username": "admin", "password": "{{ argocd_new_admin_password }}"}'
+    body_format: json
+    status_code: 200
+    validate_certs: false
+    return_content: true
+  register: argocd_login
+
+- name: Sync tekton argo application
+  ansible.builtin.uri:
+    url: "https://localhost:8443/api/v1/applications/tekton-operator/sync"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ argocd_login.json.token }}"
+    status_code: 200
+    validate_certs: false
