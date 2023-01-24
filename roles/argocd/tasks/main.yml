@@ -35,8 +35,16 @@
     mode: 0755
 
 - name: Wait for argocd to be ready
-  ansible.builtin.shell:
-    cmd: kubectl wait deployment/argocd-server --for=condition=available --timeout=300s -n "{{ argocd_k8s_namespace }}"
+  kubernetes.core.k8s:
+    wait: true
+    wait_sleep: 300
+    wait_condition:
+      type: Available
+      status: "True"
+    namespace: "{{ argocd_k8s_namespace }}"
+    kind: deployment
+    name: argocd-server
+    version: apps/v1
 
 - name: Port forward argocd service
   ansible.builtin.command: kubectl -n "{{ argocd_k8s_namespace }}" port-forward svc/argocd-server 8443:443
