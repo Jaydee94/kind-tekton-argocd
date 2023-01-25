@@ -28,33 +28,18 @@
         path: /tmp/argocd_install.yaml
         state: absent
 
-- name: Download command line tool
-  ansible.builtin.get_url:
-    url: "{{ argocd_cli_url }}"
-    dest: "{{ argocd_cli_path }}"
-    mode: 0755
-
 - name: Wait for argocd to be ready
   kubernetes.core.k8s:
     wait: true
-    wait_sleep: 300
+    wait_sleep: 5
     wait_condition:
       type: Available
       status: "True"
     namespace: "{{ argocd_k8s_namespace }}"
-    kind: deployment
+    kind: Deployment
     name: argocd-server
     version: apps/v1
-
-- name: Port forward argocd service
-  ansible.builtin.command: kubectl -n "{{ argocd_k8s_namespace }}" port-forward svc/argocd-server 8443:443
-  async: 20
-  poll: 0
-  register: _port_forward
-
-- name: Wait for port forward to start
-  async_status:
-    jid: "{{ _port_forward.ansible_job_id }}"
+  retries: 60
 
 - name: Manage admin user
   ansible.builtin.import_tasks: users.yml

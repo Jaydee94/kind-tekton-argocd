@@ -32,4 +32,5 @@ ansible-playbook -e state=absent kind.yml
 
 ```bash
 kubectl port-forward svc/argocd-server 8443:443 -n argocd
+kubectl port-forward svc/tekton-dashboard 9097:9097 -n tekton-pipelines
 ```

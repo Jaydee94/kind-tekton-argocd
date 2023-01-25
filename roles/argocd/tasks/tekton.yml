@@ -1,28 +1,48 @@
 ---
+- name: "Download tekton operator manifests"
+  ansible.builtin.get_url:
+    url: https://storage.googleapis.com/tekton-releases/operator/latest/release.yaml
+    dest: /tmp/tekton-operator.yml
+    mode: 0644
+
+- name: "Download tekton config manifests"
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/tektoncd/operator/main/config/crs/kubernetes/config/all/operator_v1alpha1_config_cr.yaml
+    dest: /tmp/tekton-config.yml
+    mode: 0644
 
 - name: Deploy tekton Application
   kubernetes.core.k8s:
-    src: templates/tekton-operator-app.yml
+    src: /tmp/tekton-operator.yml
     state: present
 
-- name: Get ArgoCD token
-  ansible.builtin.uri:
-    url: "https://localhost:8443/api/v1/session"
-    method: POST
-    headers:
-      Content-Type: "application/json"
-    body: '{"username": "admin", "password": "{{ argocd_new_admin_password }}"}'
-    body_format: json
-    status_code: 200
-    validate_certs: false
-    return_content: true
-  register: argocd_login
+- name: Wait for tekton-operator to be ready
+  kubernetes.core.k8s:
+    wait: true
+    wait_sleep: 10
+    wait_condition:
+      type: Available
+      status: "True"
+    namespace: tekton-operator
+    kind: Deployment
+    name: tekton-operator
+    version: apps/v1
+  retries: 30
 
-- name: Sync tekton argo application
-  ansible.builtin.uri:
-    url: "https://localhost:8443/api/v1/applications/tekton-operator/sync"
-    method: POST
-    headers:
-      Authorization: "Bearer {{ argocd_login.json.token }}"
-    status_code: 200
-    validate_certs: false
+- name: Deploy tekton Application
+  kubernetes.core.k8s:
+    src: /tmp/tekton-config.yml
+    state: present
+
+- name: Wait for tekton-dashboard to be ready
+  kubernetes.core.k8s:
+    wait: true
+    wait_sleep: 10
+    wait_condition:
+      type: Available
+      status: "True"
+    namespace: tekton-pipelines
+    kind: Deployment
+    name: tekton-dashboard
+    version: apps/v1
+  retries: 30
